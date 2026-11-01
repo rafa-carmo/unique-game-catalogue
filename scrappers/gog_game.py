@@ -98,6 +98,7 @@ def _detalhes(app_id: int, item: dict | None = None) -> dict | None:
         "requisitos_minimos": _requisitos_minimos(game),
         "data_lancamento": _data_lancamento(emb.get("product", {})),
         "idiomas": _idiomas(emb),
+        "generos": [g["name"] for g in (emb.get("genres") or []) if g.get("name")],
         "descricao": _descricao(game.get("overview")),
         "desenvolvedoras": [d["name"] for d in emb.get("developers", [])],
         "distribuidoras": [p["name"] for p in emb.get("publishers", [])],

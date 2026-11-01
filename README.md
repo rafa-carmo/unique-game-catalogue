@@ -145,6 +145,7 @@ Lista de jogos com os campos:
     "requisitos_minimos": "Sistema Operativo: Windows 7 ...",
     "data_lancamento": "2011-04-18",
     "idiomas": ["Inglês", "Português (Brasil)"],
+    "generos": ["Ação", "Aventura"],
     "descricao": "...",
     "desenvolvedoras": ["Valve"],
     "distribuidoras": ["Valve"]
@@ -160,6 +161,7 @@ Lista de jogos com os campos:
 | `score` | nota do Metacritic | avaliação dos usuários, de 0 a 100 |
 | `data_lancamento` | `AAAA-MM-DD` (texto original se não reconhecido) | `AAAA-MM-DD` |
 | `idiomas` | nomes em português | nomes em inglês |
+| `generos` | gêneros informados pela loja | gêneros informados pela loja |
 
 > [!NOTE]
 > Na GOG, `descricao` e `requisitos_minimos` vêm em inglês. Jogos que não aparecem no catálogo da GOG podem ter `preco`, `imagens`, `score` e `plataformas` vazios.

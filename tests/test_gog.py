@@ -19,6 +19,7 @@ def _game(titulo, devs=("CD PROJEKT RED",), pubs=("CD PROJEKT RED",), videos=Tru
             ],
             "developers": [{"name": d} for d in devs],
             "publishers": [{"name": p} for p in pubs],
+            "genres": [{"name": "RPG"}, {"name": "Aventura"}],
             "videos": (
                 [{"_links": {"self": {"href": "https://www.youtube.com/embed/abc"}}}]
                 if videos
@@ -65,7 +66,7 @@ def _mock_catalogo(mock_http, itens, query=None):
 
 CAMPOS = {
     "id", "nome", "preco", "imagens", "videos", "score", "plataformas",
-    "requisitos_minimos", "data_lancamento", "idiomas", "descricao", "desenvolvedoras", "distribuidoras",
+    "requisitos_minimos", "data_lancamento", "idiomas", "generos", "descricao", "desenvolvedoras", "distribuidoras",
 }
 
 
@@ -90,6 +91,7 @@ def test_buscar_por_id_retorna_formato_padrao(client, auth, mock_http):
         "requisitos_minimos": "System: Windows 10\nMemory: 2 GB RAM",
         "data_lancamento": "2007-10-26",
         "idiomas": ["English", "German"],
+        "generos": ["RPG", "Aventura"],
         "descricao": "Primeiro parágrafo.",
         "desenvolvedoras": ["CD PROJEKT RED"],
         "distribuidoras": ["CD PROJEKT RED"],
@@ -108,6 +110,17 @@ def test_id_fora_do_catalogo_retorna_campos_vazios(client, auth, mock_http):
     assert jogo["imagens"] == []
     assert jogo["plataformas"] == []
     assert jogo["videos"] == []
+
+
+def test_generos_vazios_quando_nao_informados(client, auth, mock_http):
+    game = _game("Sem gêneros")
+    game["_embedded"].pop("genres")
+    _mock_jogo(mock_http, 100, game)
+    _mock_catalogo(mock_http, [_item(100, "Sem gêneros")], query="like:Sem gêneros")
+
+    jogo = client.get("/gog/buscar?id=100", headers=auth).json()[0]
+
+    assert jogo["generos"] == []
 
 
 def test_id_inexistente_retorna_lista_vazia(client, auth, mock_http):

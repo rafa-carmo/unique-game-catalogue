@@ -22,6 +22,7 @@ def _app(app_id, nome, devs=("Valve",), pubs=("Valve",), **extra):
         "short_description": "Descrição do jogo",
         "developers": list(devs),
         "publishers": list(pubs),
+        "genres": [{"description": "Ação"}, {"description": "Aventura"}],
     }
     data.update(extra)
     return {str(app_id): {"success": True, "data": data}}
@@ -41,7 +42,7 @@ def _mock_busca(mock_http, ids):
 
 CAMPOS = {
     "id", "nome", "preco", "imagens", "videos", "score", "plataformas",
-    "requisitos_minimos", "data_lancamento", "idiomas", "descricao", "desenvolvedoras", "distribuidoras",
+    "requisitos_minimos", "data_lancamento", "idiomas", "generos", "descricao", "desenvolvedoras", "distribuidoras",
 }
 
 
@@ -65,6 +66,7 @@ def test_buscar_por_id_retorna_formato_padrao(client, auth, mock_http):
         "requisitos_minimos": "Mínimos:\nWindows 7\n2 GB RAM",
         "data_lancamento": "2011-04-18",
         "idiomas": ["Inglês", "Português (Brasil)", "Espanhol"],
+        "generos": ["Ação", "Aventura"],
         "descricao": "Descrição do jogo",
         "desenvolvedoras": ["Valve"],
         "distribuidoras": ["Valve"],
@@ -86,6 +88,14 @@ def test_jogo_gratuito_e_sem_metacritic(client, auth, mock_http):
 
     assert jogo["preco"] == "Gratuito"
     assert jogo["score"] is None
+
+
+def test_generos_vazios_quando_nao_informados(client, auth, mock_http):
+    _mock_detalhes(mock_http, 10, _app(10, "Sem gêneros", genres=None))
+
+    jogo = client.get("/steam/buscar?id=10", headers=auth).json()[0]
+
+    assert jogo["generos"] == []
 
 
 def test_buscar_por_nome_retorna_todos_os_resultados(client, auth, mock_http):

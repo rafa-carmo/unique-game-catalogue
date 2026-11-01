@@ -77,6 +77,7 @@ def _detalhes(app_id: int) -> dict | None:
         "requisitos_minimos": _texto(minimos),
         "data_lancamento": _data_lancamento(d.get("release_date")),
         "idiomas": _idiomas(d.get("supported_languages")),
+        "generos": [g["description"] for g in (d.get("genres") or []) if g.get("description")],
         "descricao": d.get("short_description"),
         "desenvolvedoras": d.get("developers", []),
         "distribuidoras": d.get("publishers", []),
