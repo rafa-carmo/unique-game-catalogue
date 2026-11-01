@@ -175,11 +175,20 @@ Lista de jogos com os campos:
 └── docker-compose.yml
 ```
 
+## Testes
+
+Os testes ficam em `tests/` e usam respostas HTTP mockadas (biblioteca `responses`), sem acessar a Steam nem a GOG.
+
+```bash
+uv sync --group dev
+uv run pytest
+```
+
 ## Como contribuir
 
 1. Faça um fork e crie uma branch: `git checkout -b feature/minha-melhoria`.
 2. Instale as dependências com `uv sync` e rode a API com `uv run fastapi dev main.py`.
 3. Para adicionar uma nova loja, crie o scraper em `scrappers/`, a rota em `routes/` e registre o router em `main.py`, mantendo o [formato de resposta](#formato-da-resposta) e os parâmetros `id`, `name`, `developer` e `publisher`.
-4. Teste manualmente a rota nova, com e sem a API key.
+4. Teste a rota nova (com e sem a API key) e adicione testes em `tests/`, com as chamadas externas mockadas.
 5. Nunca versione o `.env` nem chaves reais.
 6. Faça commits pequenos e descritivos e abra um Pull Request explicando o que mudou e por quê.
