@@ -14,6 +14,31 @@ def _texto(html: str | None) -> str | None:
     return re.sub(r"<[^>]+>", "", html).strip()
 
 
+MESES = {
+    "jan": 1, "fev": 2, "mar": 3, "abr": 4, "mai": 5, "jun": 6,
+    "jul": 7, "ago": 8, "set": 9, "out": 10, "nov": 11, "dez": 12,
+}
+
+
+def _data_lancamento(release_date: dict | None) -> str | None:
+    """Converte '18 abr. 2011' para '2011-04-18'; devolve o texto original se não reconhecer."""
+    texto = ((release_date or {}).get("date") or "").strip()
+    if not texto:
+        return None
+    m = re.fullmatch(r"(\d{1,2}) (?:de )?([a-zç]{3})[a-zç]*\.?,? (?:de )?(\d{4})", texto.lower())
+    if m and m.group(2) in MESES:
+        return f"{m.group(3)}-{MESES[m.group(2)]:02d}-{int(m.group(1)):02d}"
+    return texto
+
+
+def _idiomas(html: str | None) -> list[str]:
+    if not html:
+        return []
+    html = html.split("<br>")[0]
+    texto = re.sub(r"<[^>]+>", "", html).replace("*", "")
+    return [i.strip() for i in texto.split(",") if i.strip()]
+
+
 def _detalhes(app_id: int) -> dict | None:
     resp = requests.get(
         APP_DETAILS_URL, params={"appids": app_id, "l": "portuguese"}, timeout=TIMEOUT
@@ -50,6 +75,8 @@ def _detalhes(app_id: int) -> dict | None:
         "score": (d.get("metacritic") or {}).get("score"),
         "plataformas": plataformas,
         "requisitos_minimos": _texto(minimos),
+        "data_lancamento": _data_lancamento(d.get("release_date")),
+        "idiomas": _idiomas(d.get("supported_languages")),
         "descricao": d.get("short_description"),
         "desenvolvedoras": d.get("developers", []),
         "distribuidoras": d.get("publishers", []),

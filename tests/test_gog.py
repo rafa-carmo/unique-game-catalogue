@@ -11,7 +11,12 @@ def _game(titulo, devs=("CD PROJEKT RED",), pubs=("CD PROJEKT RED",), videos=Tru
     return {
         "overview": "<p>Primeiro parágrafo.<br>\n<br>\n<video><source src='x.mp4'></video></p><p>Segundo.</p>",
         "_embedded": {
-            "product": {"title": titulo},
+            "product": {"title": titulo, "globalReleaseDate": "2007-10-26T00:00:00+02:00"},
+            "localizations": [
+                {"_embedded": {"language": {"name": nome}, "localizationScope": {"type": tipo}}}
+                for nome in ("English", "German")
+                for tipo in ("audio", "text")
+            ],
             "developers": [{"name": d} for d in devs],
             "publishers": [{"name": p} for p in pubs],
             "videos": (
@@ -60,7 +65,7 @@ def _mock_catalogo(mock_http, itens, query=None):
 
 CAMPOS = {
     "id", "nome", "preco", "imagens", "videos", "score", "plataformas",
-    "requisitos_minimos", "descricao", "desenvolvedoras", "distribuidoras",
+    "requisitos_minimos", "data_lancamento", "idiomas", "descricao", "desenvolvedoras", "distribuidoras",
 }
 
 
@@ -83,6 +88,8 @@ def test_buscar_por_id_retorna_formato_padrao(client, auth, mock_http):
         "score": 92,
         "plataformas": ["Windows", "Mac"],
         "requisitos_minimos": "System: Windows 10\nMemory: 2 GB RAM",
+        "data_lancamento": "2007-10-26",
+        "idiomas": ["English", "German"],
         "descricao": "Primeiro parágrafo.",
         "desenvolvedoras": ["CD PROJEKT RED"],
         "distribuidoras": ["CD PROJEKT RED"],

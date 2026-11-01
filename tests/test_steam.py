@@ -2,7 +2,7 @@ import pytest
 import requests
 from responses import matchers
 
-from scrappers.steam import APP_DETAILS_URL, STORE_SEARCH_URL
+from scrappers.steam import APP_DETAILS_URL, STORE_SEARCH_URL, _data_lancamento
 
 
 def _app(app_id, nome, devs=("Valve",), pubs=("Valve",), **extra):
@@ -17,6 +17,8 @@ def _app(app_id, nome, devs=("Valve",), pubs=("Valve",), **extra):
         "metacritic": {"score": 95},
         "platforms": {"windows": True, "mac": False, "linux": True},
         "pc_requirements": {"minimum": "<strong>Mínimos:</strong><br>Windows 7<br>2 GB RAM"},
+        "release_date": {"coming_soon": False, "date": "18 abr. 2011"},
+        "supported_languages": "Inglês<strong>*</strong>, Português (Brasil), Espanhol<br><strong>*</strong>idiomas com suporte total de áudio",
         "short_description": "Descrição do jogo",
         "developers": list(devs),
         "publishers": list(pubs),
@@ -39,7 +41,7 @@ def _mock_busca(mock_http, ids):
 
 CAMPOS = {
     "id", "nome", "preco", "imagens", "videos", "score", "plataformas",
-    "requisitos_minimos", "descricao", "desenvolvedoras", "distribuidoras",
+    "requisitos_minimos", "data_lancamento", "idiomas", "descricao", "desenvolvedoras", "distribuidoras",
 }
 
 
@@ -61,6 +63,8 @@ def test_buscar_por_id_retorna_formato_padrao(client, auth, mock_http):
         "score": 95,
         "plataformas": ["Windows", "Linux"],
         "requisitos_minimos": "Mínimos:\nWindows 7\n2 GB RAM",
+        "data_lancamento": "2011-04-18",
+        "idiomas": ["Inglês", "Português (Brasil)", "Espanhol"],
         "descricao": "Descrição do jogo",
         "desenvolvedoras": ["Valve"],
         "distribuidoras": ["Valve"],
@@ -124,6 +128,30 @@ def test_id_com_name_filtra_pelo_nome(client, auth, mock_http):
 
     assert len(client.get("/steam/buscar?id=620&name=portal", headers=auth).json()) == 1
     assert client.get("/steam/buscar?id=620&name=zelda", headers=auth).json() == []
+
+
+@pytest.mark.parametrize(
+    "entrada, esperado",
+    [
+        ("18 abr. 2011", "2011-04-18"),
+        ("1 de mar. de 2020", "2020-03-01"),
+        ("5 dez 2019", "2019-12-05"),
+        ("Em breve", "Em breve"),
+        ("", None),
+    ],
+)
+def test_data_lancamento_normalizada(entrada, esperado):
+    assert _data_lancamento({"date": entrada}) == esperado
+
+
+def test_data_e_idiomas_ausentes(client, auth, mock_http):
+    payload = _app(11, "Sem dados", release_date=None, supported_languages=None)
+    _mock_detalhes(mock_http, 11, payload)
+
+    jogo = client.get("/steam/buscar?id=11", headers=auth).json()[0]
+
+    assert jogo["data_lancamento"] is None
+    assert jogo["idiomas"] == []
 
 
 def test_sem_id_e_sem_name_retorna_400(client, auth, mock_http):

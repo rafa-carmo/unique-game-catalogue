@@ -44,6 +44,20 @@ def _requisitos_minimos(game: dict) -> str | None:
     return None
 
 
+def _idiomas(emb: dict) -> list[str]:
+    nomes = []
+    for loc in emb.get("localizations", []):
+        nome = loc.get("_embedded", {}).get("language", {}).get("name")
+        if nome and nome not in nomes:
+            nomes.append(nome)
+    return nomes
+
+
+def _data_lancamento(product: dict) -> str | None:
+    data = product.get("globalReleaseDate") or product.get("gogReleaseDate")
+    return data[:10] if data else None
+
+
 def _detalhes(app_id: int, item: dict | None = None) -> dict | None:
     resp = requests.get(
         GAME_URL.format(id=app_id), params={"locale": "pt-BR"}, timeout=TIMEOUT
@@ -82,6 +96,8 @@ def _detalhes(app_id: int, item: dict | None = None) -> dict | None:
             PLATAFORMAS[o] for o in item.get("operatingSystems", []) if o in PLATAFORMAS
         ],
         "requisitos_minimos": _requisitos_minimos(game),
+        "data_lancamento": _data_lancamento(emb.get("product", {})),
+        "idiomas": _idiomas(emb),
         "descricao": _descricao(game.get("overview")),
         "desenvolvedoras": [d["name"] for d in emb.get("developers", [])],
         "distribuidoras": [p["name"] for p in emb.get("publishers", [])],
