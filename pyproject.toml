@@ -1,0 +1,6 @@
+[project]
+name = "game-scrapper"
+version = "0.0.1"
+dependencies = [
+    "fastapi[standard]>=0.162.0",
+]
