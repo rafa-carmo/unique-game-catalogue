@@ -1,9 +1,11 @@
 from fastapi import FastAPI
 
-
+from routes.gog import router as gog_router
+from routes.steam import router as steam_router
 
 app = FastAPI()
-
+app.include_router(steam_router)
+app.include_router(gog_router)
 
 
 @app.get("/")
