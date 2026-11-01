@@ -1,9 +1,10 @@
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 
+from auth import verificar_api_key
 from routes.gog import router as gog_router
 from routes.steam import router as steam_router
 
-app = FastAPI()
+app = FastAPI(dependencies=[Depends(verificar_api_key)])
 app.include_router(steam_router)
 app.include_router(gog_router)
 

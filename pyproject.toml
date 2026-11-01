@@ -3,4 +3,6 @@ name = "game-scrapper"
 version = "0.0.1"
 dependencies = [
     "fastapi[standard]>=0.162.0",
+    "python-dotenv>=1.0.0",
+    "requests>=2.31.0",
 ]
