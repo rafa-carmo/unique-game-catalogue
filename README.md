@@ -12,6 +12,7 @@ API REST em FastAPI que busca jogos na **Steam** e na **GOG** e devolve os dados
 ## Funcionalidades
 
 - Busca de jogos na Steam e na GOG por `id`, nome, desenvolvedora ou distribuidora.
+- Lista dos jogos gratuitos no momento na Epic Games Store.
 - Filtros combináveis (AND) e com correspondência parcial, sem diferenciar maiúsculas de minúsculas.
 - Retorno padronizado nas duas lojas, em reais (BRL).
 - Todas as rotas protegidas por API key no header `X-API-Key`.
@@ -107,6 +108,7 @@ curl -H "X-API-Key: <sua-chave>" "http://localhost:8000/steam/buscar?id=620"
 | `GET` | `/items/{item_id}` | Rota de exemplo; aceita o parâmetro opcional `q`. |
 | `GET` | `/steam/buscar` | Busca jogos na Steam. |
 | `GET` | `/gog/buscar` | Busca jogos na GOG. |
+| `GET` | `/epic/gratuitos` | Lista os jogos gratuitos agora na Epic Games Store. |
 
 A documentação interativa está em `/docs` (Swagger) e `/redoc`.
 
@@ -162,6 +164,13 @@ Lista de jogos com os campos:
 > [!NOTE]
 > Na GOG, `descricao` e `requisitos_minimos` vêm em inglês. Jogos que não aparecem no catálogo da GOG podem ter `preco`, `imagens`, `score` e `plataformas` vazios.
 
+### Rota `/epic/gratuitos`
+
+Não recebe parâmetros. Retorna os jogos com 100% de desconto no momento (preços em BRL), no mesmo formato acima, mais três campos: `inicio_promocao`, `fim_promocao` (datas ISO em UTC) e `url` da página na loja.
+
+> [!NOTE]
+> A Epic não oferece API pública de busca, então só existe a lista de gratuitos. Nela, `videos`, `score`, `plataformas`, `requisitos_minimos` e `idiomas` vêm vazios ou `null`.
+
 ## Estrutura do projeto
 
 ```text
@@ -171,10 +180,13 @@ Lista de jogos com os campos:
 ├── generate_api_key.py    # gera e salva a API_KEY no .env
 ├── routes/
 │   ├── steam.py           # rota /steam/buscar
-│   └── gog.py             # rota /gog/buscar
+│   ├── gog.py             # rota /gog/buscar
+│   └── epic.py            # rota /epic/gratuitos
 ├── scrappers/
 │   ├── steam.py           # integração com a Steam
-│   └── gog_game.py        # integração com a GOG
+│   ├── gog_game.py        # integração com a GOG
+│   └── epic_games.py      # integração com a Epic Games
+├── tests/                 # testes com HTTP mockado
 ├── Dockerfile
 └── docker-compose.yml
 ```
