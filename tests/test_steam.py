@@ -41,7 +41,7 @@ def _mock_busca(mock_http, ids):
 
 
 CAMPOS = {
-    "id", "nome", "preco", "imagens", "videos", "score", "plataformas",
+    "id", "url", "nome", "preco", "imagens", "videos", "score", "plataformas",
     "requisitos_minimos", "data_lancamento", "idiomas", "generos", "descricao", "desenvolvedoras", "distribuidoras",
 }
 
@@ -57,6 +57,7 @@ def test_buscar_por_id_retorna_formato_padrao(client, auth, mock_http):
     assert set(jogos[0]) == CAMPOS
     assert jogos[0] == {
         "id": 620,
+        "url": "https://store.steampowered.com/app/620",
         "nome": "Portal 2",
         "preco": "R$ 33,99",
         "imagens": ["https://img/620/header.jpg", "https://img/620/ss1.jpg"],

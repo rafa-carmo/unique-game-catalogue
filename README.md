@@ -136,6 +136,7 @@ Lista de jogos com os campos:
 [
   {
     "id": 620,
+    "url": "https://store.steampowered.com/app/620",
     "nome": "Portal 2",
     "preco": "R$ 33,99",
     "imagens": ["https://..."],
@@ -155,6 +156,7 @@ Lista de jogos com os campos:
 
 | Campo | Steam | GOG |
 | --- | --- | --- |
+| `url` | página do jogo na loja | página do jogo na loja, ou `null` se o catálogo não fornecer o slug |
 | `preco` | preço final, ou `"Gratuito"` | preço final em BRL |
 | `imagens` | capa e screenshots | capa e screenshots |
 | `videos` | links HLS (`.m3u8`) | embeds do YouTube |
@@ -168,7 +170,7 @@ Lista de jogos com os campos:
 
 ### Rota `/epic/gratuitos`
 
-Não recebe parâmetros. Retorna os jogos com 100% de desconto no momento (preços em BRL), no mesmo formato acima, mais três campos: `inicio_promocao`, `fim_promocao` (datas ISO em UTC) e `url` da página na loja.
+Não recebe parâmetros. Retorna os jogos com 100% de desconto no momento (preços em BRL), no mesmo formato acima, mais os campos `inicio_promocao` e `fim_promocao` (datas ISO em UTC). Também inclui `url` da página na loja.
 
 > [!NOTE]
 > A Epic não oferece API pública de busca, então só existe a lista de gratuitos. Nela, `videos`, `score`, `plataformas`, `requisitos_minimos` e `idiomas` vêm vazios ou `null`.

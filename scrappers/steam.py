@@ -4,6 +4,7 @@ import requests
 
 STORE_SEARCH_URL = "https://store.steampowered.com/api/storesearch/"
 APP_DETAILS_URL = "https://store.steampowered.com/api/appdetails"
+STORE_GAME_URL = "https://store.steampowered.com/app/{id}"
 TIMEOUT = 15
 
 
@@ -64,6 +65,7 @@ def _detalhes(app_id: int) -> dict | None:
     minimos = requisitos.get("minimum") if isinstance(requisitos, dict) else None
     return {
         "id": d.get("steam_appid"),
+        "url": STORE_GAME_URL.format(id=app_id),
         "nome": d.get("name"),
         "preco": (
             "Gratuito"

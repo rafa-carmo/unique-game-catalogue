@@ -4,6 +4,7 @@ import requests
 
 CATALOG_URL = "https://catalog.gog.com/v1/catalog"
 GAME_URL = "https://api.gog.com/v2/games/{id}"
+STORE_GAME_URL = "https://www.gog.com/en/game/{slug}"
 TIMEOUT = 15
 MAX_RESULTS = 10
 PLATAFORMAS = {"windows": "Windows", "osx": "Mac", "linux": "Linux"}
@@ -86,6 +87,7 @@ def _detalhes(app_id: int, item: dict | None = None) -> dict | None:
     rating = item.get("reviewsRating")
     return {
         "id": app_id,
+        "url": STORE_GAME_URL.format(slug=item["slug"]) if item.get("slug") else None,
         "nome": titulo,
         "preco": preco,
         "imagens": imagens,

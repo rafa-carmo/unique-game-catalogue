@@ -47,6 +47,7 @@ def _item(app_id, titulo="Jogo", rating=46, os_=("windows", "osx")):
     return {
         "id": str(app_id),
         "title": titulo,
+        "slug": f"jogo_{app_id}",
         "coverHorizontal": f"https://img/{app_id}/cover.png",
         "screenshots": [f"https://img/{app_id}/s1_{{formatter}}.jpg"],
         "operatingSystems": list(os_),
@@ -65,7 +66,7 @@ def _mock_catalogo(mock_http, itens, query=None):
 
 
 CAMPOS = {
-    "id", "nome", "preco", "imagens", "videos", "score", "plataformas",
+    "id", "url", "nome", "preco", "imagens", "videos", "score", "plataformas",
     "requisitos_minimos", "data_lancamento", "idiomas", "generos", "descricao", "desenvolvedoras", "distribuidoras",
 }
 
@@ -82,6 +83,7 @@ def test_buscar_por_id_retorna_formato_padrao(client, auth, mock_http):
     assert set(jogos[0]) == CAMPOS
     assert jogos[0] == {
         "id": 100,
+        "url": "https://www.gog.com/en/game/jogo_100",
         "nome": "The Witcher",
         "preco": "R$ 2,55",
         "imagens": ["https://img/100/cover.png", "https://img/100/s1_1600.jpg"],
@@ -105,6 +107,7 @@ def test_id_fora_do_catalogo_retorna_campos_vazios(client, auth, mock_http):
     jogo = client.get("/gog/buscar?id=1", headers=auth).json()[0]
 
     assert jogo["nome"] == "Fallout Classic"
+    assert jogo["url"] is None
     assert jogo["preco"] is None
     assert jogo["score"] is None
     assert jogo["imagens"] == []
