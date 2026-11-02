@@ -178,6 +178,35 @@ def test_id_com_name_filtra_pelo_nome(client, auth, mock_http):
     assert client.get("/gog/buscar?id=100&name=zelda", headers=auth).json() == []
 
 
+def _preco(final, base):
+    return {"final": f"R$ {final}", "finalMoney": {"amount": str(final)}, "baseMoney": {"amount": str(base)}}
+
+
+def test_exige_api_key_em_gratuitos(client):
+    assert client.get("/gog/gratuitos").status_code == 401
+
+
+def test_gratuitos_lista_apenas_promocoes_com_preco_zerado(client, auth, mock_http):
+    gratis = {**_item(1, "Gratis"), "price": _preco("0.00", "20.00")}
+    desconto = {**_item(2, "Desconto"), "price": _preco("10.00", "20.00")}
+    sempre_gratis = {**_item(3, "Sempre"), "price": _preco("0.00", "0.00")}
+    _mock_catalogo(mock_http, [gratis, desconto, sempre_gratis])
+    mock_http.get(GAME_URL_RE, json=_game("Gratis"))
+
+    resp = client.get("/gog/gratuitos", headers=auth)
+
+    assert resp.status_code == 200
+    jogos = resp.json()
+    assert [j["id"] for j in jogos] == [1]
+    assert set(jogos[0]) == CAMPOS
+    assert jogos[0]["url"] == "https://www.gog.com/en/game/jogo_1"
+
+
+def test_gratuitos_sem_resultados_retorna_lista_vazia(client, auth, mock_http):
+    _mock_catalogo(mock_http, [])
+    assert client.get("/gog/gratuitos", headers=auth).json() == []
+
+
 def test_sem_id_e_sem_name_retorna_400(client, auth, mock_http):
     resp = client.get("/gog/buscar?publisher=x", headers=auth)
     assert resp.status_code == 400

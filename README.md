@@ -107,7 +107,9 @@ curl -H "X-API-Key: <sua-chave>" "http://localhost:8000/steam/buscar?id=620"
 | `GET` | `/` | Rota de teste (`{"Hello": "World"}`). |
 | `GET` | `/items/{item_id}` | Rota de exemplo; aceita o parâmetro opcional `q`. |
 | `GET` | `/steam/buscar` | Busca jogos na Steam. |
+| `GET` | `/steam/gratuitos` | Lista os jogos com 100% de desconto agora na Steam. |
 | `GET` | `/gog/buscar` | Busca jogos na GOG. |
+| `GET` | `/gog/gratuitos` | Lista os jogos em promoção com preço zerado agora na GOG. |
 | `GET` | `/epic/gratuitos` | Lista os jogos gratuitos agora na Epic Games Store. |
 
 A documentação interativa está em `/docs` (Swagger) e `/redoc`.
@@ -167,6 +169,14 @@ Lista de jogos com os campos:
 
 > [!NOTE]
 > Na GOG, `descricao` e `requisitos_minimos` vêm em inglês. Jogos que não aparecem no catálogo da GOG podem ter `preco`, `imagens`, `score` e `plataformas` vazios.
+
+### Rota `/steam/gratuitos`
+
+Não recebe parâmetros. Retorna até 50 jogos em promoção com 100% de desconto no momento (preços em BRL), no mesmo formato de `/steam/buscar`, incluindo `url`.
+
+### Rota `/gog/gratuitos`
+
+Não recebe parâmetros. Retorna até 48 jogos em promoção cujo preço final é zero no momento (preços em BRL), no mesmo formato de `/gog/buscar`, incluindo `url`. Pode retornar lista vazia quando não há promoções gratuitas.
 
 ### Rota `/epic/gratuitos`
 

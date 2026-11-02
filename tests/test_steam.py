@@ -2,7 +2,7 @@ import pytest
 import requests
 from responses import matchers
 
-from scrappers.steam import APP_DETAILS_URL, STORE_SEARCH_URL, _data_lancamento
+from scrappers.steam import APP_DETAILS_URL, SEARCH_RESULTS_URL, STORE_SEARCH_URL, _data_lancamento
 
 
 def _app(app_id, nome, devs=("Valve",), pubs=("Valve",), **extra):
@@ -163,6 +163,40 @@ def test_data_e_idiomas_ausentes(client, auth, mock_http):
 
     assert jogo["data_lancamento"] is None
     assert jogo["idiomas"] == []
+
+
+def test_exige_api_key_em_gratuitos(client):
+    assert client.get("/steam/gratuitos").status_code == 401
+
+
+def test_gratuitos_lista_apenas_100_por_cento_de_desconto(client, auth, mock_http):
+    mock_http.get(
+        SEARCH_RESULTS_URL,
+        json={
+            "items": [
+                {"name": "A", "logo": "https://cdn/steam/apps/1/hash/capsule.jpg?t=1"},
+                {"name": "B", "logo": "https://cdn/steam/apps/2/hash/capsule.jpg?t=1"},
+                {"name": "Sem id", "logo": "https://cdn/outro.jpg"},
+            ]
+        },
+    )
+    gratis = _app(1, "A", price_overview={"final_formatted": "Gratuito", "discount_percent": 100})
+    desconto = _app(2, "B", price_overview={"final_formatted": "R$ 5,00", "discount_percent": 50})
+    _mock_detalhes(mock_http, 1, gratis)
+    _mock_detalhes(mock_http, 2, desconto)
+
+    resp = client.get("/steam/gratuitos", headers=auth)
+
+    assert resp.status_code == 200
+    jogos = resp.json()
+    assert [j["id"] for j in jogos] == [1]
+    assert set(jogos[0]) == CAMPOS
+    assert jogos[0]["url"] == "https://store.steampowered.com/app/1"
+
+
+def test_gratuitos_sem_resultados_retorna_lista_vazia(client, auth, mock_http):
+    mock_http.get(SEARCH_RESULTS_URL, json={"items": []})
+    assert client.get("/steam/gratuitos", headers=auth).json() == []
 
 
 def test_sem_id_e_sem_name_retorna_400(client, auth, mock_http):

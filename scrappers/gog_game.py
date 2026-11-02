@@ -7,6 +7,7 @@ GAME_URL = "https://api.gog.com/v2/games/{id}"
 STORE_GAME_URL = "https://www.gog.com/en/game/{slug}"
 TIMEOUT = 15
 MAX_RESULTS = 10
+MAX_GRATUITOS = 48
 PLATAFORMAS = {"windows": "Windows", "osx": "Mac", "linux": "Linux"}
 
 
@@ -105,6 +106,28 @@ def _detalhes(app_id: int, item: dict | None = None) -> dict | None:
         "desenvolvedoras": [d["name"] for d in emb.get("developers", [])],
         "distribuidoras": [p["name"] for p in emb.get("publishers", [])],
     }
+
+
+def _valor(money: dict | None) -> float:
+    return float((money or {}).get("amount") or 0)
+
+
+def gratuitos() -> list[dict]:
+    """Lista os jogos em promoção com preço final zerado agora na GOG (Brasil)."""
+    itens = _catalogo(
+        discounted="eq:true",
+        price="between:0,0",
+        limit=MAX_GRATUITOS,
+        productType="in:game,pack",
+    )
+    jogos = []
+    for item in itens:
+        preco = item.get("price") or {}
+        if _valor(preco.get("finalMoney")) == 0 and _valor(preco.get("baseMoney")) > 0:
+            jogo = _detalhes(int(item["id"]), item)
+            if jogo:
+                jogos.append(jogo)
+    return jogos
 
 
 def _contem(valores: list[str], termo: str) -> bool:

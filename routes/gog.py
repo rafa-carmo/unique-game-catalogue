@@ -5,6 +5,11 @@ from scrappers import gog_game
 router = APIRouter(prefix="/gog", tags=["gog"])
 
 
+@router.get("/gratuitos")
+def gratuitos():
+    return gog_game.gratuitos()
+
+
 @router.get("/buscar")
 def buscar(
     id: int | None = None,

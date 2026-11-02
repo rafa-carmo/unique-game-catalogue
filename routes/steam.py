@@ -5,6 +5,11 @@ from scrappers import steam
 router = APIRouter(prefix="/steam", tags=["steam"])
 
 
+@router.get("/gratuitos")
+def gratuitos():
+    return steam.gratuitos()
+
+
 @router.get("/buscar")
 def buscar(
     id: int | None = None,

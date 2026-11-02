@@ -5,7 +5,9 @@ import requests
 STORE_SEARCH_URL = "https://store.steampowered.com/api/storesearch/"
 APP_DETAILS_URL = "https://store.steampowered.com/api/appdetails"
 STORE_GAME_URL = "https://store.steampowered.com/app/{id}"
+SEARCH_RESULTS_URL = "https://store.steampowered.com/search/results/"
 TIMEOUT = 15
+MAX_GRATUITOS = 50
 
 
 def _texto(html: str | None) -> str | None:
@@ -40,7 +42,7 @@ def _idiomas(html: str | None) -> list[str]:
     return [i.strip() for i in texto.split(",") if i.strip()]
 
 
-def _detalhes(app_id: int) -> dict | None:
+def _dados(app_id: int) -> dict | None:
     resp = requests.get(
         APP_DETAILS_URL, params={"appids": app_id, "l": "portuguese"}, timeout=TIMEOUT
     )
@@ -48,7 +50,15 @@ def _detalhes(app_id: int) -> dict | None:
     entrada = resp.json().get(str(app_id), {})
     if not entrada.get("success"):
         return None
-    d = entrada["data"]
+    return entrada["data"]
+
+
+def _detalhes(app_id: int) -> dict | None:
+    d = _dados(app_id)
+    return _formatar(d, app_id) if d else None
+
+
+def _formatar(d: dict, app_id: int) -> dict:
     plataformas = [
         nome
         for chave, nome in (("windows", "Windows"), ("mac", "Mac"), ("linux", "Linux"))
@@ -84,6 +94,28 @@ def _detalhes(app_id: int) -> dict | None:
         "desenvolvedoras": d.get("developers", []),
         "distribuidoras": d.get("publishers", []),
     }
+
+
+def gratuitos() -> list[dict]:
+    """Lista os jogos com 100% de desconto agora na Steam (Brasil)."""
+    resp = requests.get(
+        SEARCH_RESULTS_URL,
+        params={
+            "query": "", "start": 0, "count": MAX_GRATUITOS, "specials": 1,
+            "maxprice": "free", "json": 1, "cc": "BR", "l": "portuguese",
+        },
+        timeout=TIMEOUT,
+    )
+    resp.raise_for_status()
+    jogos = []
+    for item in resp.json().get("items", []):
+        m = re.search(r"/apps/(\d+)/", item.get("logo") or "")
+        if not m:
+            continue
+        d = _dados(int(m.group(1)))
+        if d and (d.get("price_overview") or {}).get("discount_percent") == 100:
+            jogos.append(_formatar(d, int(m.group(1))))
+    return jogos
 
 
 def _contem(valores: list[str], termo: str) -> bool:
