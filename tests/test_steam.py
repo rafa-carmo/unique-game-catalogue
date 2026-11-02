@@ -2,7 +2,7 @@ import pytest
 import requests
 from responses import matchers
 
-from scrappers.steam import APP_DETAILS_URL, SEARCH_RESULTS_URL, STORE_SEARCH_URL, _data_lancamento
+from scrappers.steam import APP_DETAILS_URL, BROWSE_ITEMS_URL, SEARCH_RESULTS_URL, STORE_SEARCH_URL, _data_lancamento
 
 
 def _app(app_id, nome, devs=("Valve",), pubs=("Valve",), **extra):
@@ -184,14 +184,22 @@ def test_gratuitos_lista_apenas_100_por_cento_de_desconto(client, auth, mock_htt
     desconto = _app(2, "B", price_overview={"final_formatted": "R$ 5,00", "discount_percent": 50})
     _mock_detalhes(mock_http, 1, gratis)
     _mock_detalhes(mock_http, 2, desconto)
+    mock_http.get(
+        BROWSE_ITEMS_URL,
+        json={"response": {"store_items": [
+            {"appid": 1, "best_purchase_option": {"free_to_keep_ends": 1793642400}},
+        ]}},
+    )
 
     resp = client.get("/steam/gratuitos", headers=auth)
 
     assert resp.status_code == 200
     jogos = resp.json()
     assert [j["id"] for j in jogos] == [1]
-    assert set(jogos[0]) == CAMPOS
+    assert set(jogos[0]) == CAMPOS | {"inicio_promocao", "fim_promocao"}
     assert jogos[0]["url"] == "https://store.steampowered.com/app/1"
+    assert jogos[0]["inicio_promocao"] is None
+    assert jogos[0]["fim_promocao"] == "2026-11-02T18:00:00.000Z"
 
 
 def test_gratuitos_sem_resultados_retorna_lista_vazia(client, auth, mock_http):

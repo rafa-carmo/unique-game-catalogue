@@ -198,8 +198,10 @@ def test_gratuitos_lista_apenas_promocoes_com_preco_zerado(client, auth, mock_ht
     assert resp.status_code == 200
     jogos = resp.json()
     assert [j["id"] for j in jogos] == [1]
-    assert set(jogos[0]) == CAMPOS
+    assert set(jogos[0]) == CAMPOS | {"inicio_promocao", "fim_promocao"}
     assert jogos[0]["url"] == "https://www.gog.com/en/game/jogo_1"
+    assert jogos[0]["inicio_promocao"] is None
+    assert jogos[0]["fim_promocao"] is None
 
 
 def test_gratuitos_sem_resultados_retorna_lista_vazia(client, auth, mock_http):

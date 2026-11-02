@@ -126,6 +126,9 @@ def gratuitos() -> list[dict]:
         if _valor(preco.get("finalMoney")) == 0 and _valor(preco.get("baseMoney")) > 0:
             jogo = _detalhes(int(item["id"]), item)
             if jogo:
+                # a GOG não informa as datas da promoção
+                jogo["inicio_promocao"] = None
+                jogo["fim_promocao"] = None
                 jogos.append(jogo)
     return jogos
 

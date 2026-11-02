@@ -1,7 +1,10 @@
+import json
 import re
+from datetime import datetime, timezone
 
 import requests
 
+BROWSE_ITEMS_URL = "https://api.steampowered.com/IStoreBrowseService/GetItems/v1"
 STORE_SEARCH_URL = "https://store.steampowered.com/api/storesearch/"
 APP_DETAILS_URL = "https://store.steampowered.com/api/appdetails"
 STORE_GAME_URL = "https://store.steampowered.com/app/{id}"
@@ -96,6 +99,28 @@ def _formatar(d: dict, app_id: int) -> dict:
     }
 
 
+def _fim_promocoes(ids: list[int]) -> dict[int, str]:
+    if not ids:
+        return {}
+    entrada = {
+        "ids": [{"appid": i} for i in ids],
+        "context": {"language": "portuguese", "country_code": "BR"},
+        "data_request": {},
+    }
+    resp = requests.get(
+        BROWSE_ITEMS_URL, params={"input_json": json.dumps(entrada)}, timeout=TIMEOUT
+    )
+    resp.raise_for_status()
+    fins = {}
+    for item in resp.json().get("response", {}).get("store_items", []):
+        fim = (item.get("best_purchase_option") or {}).get("free_to_keep_ends")
+        if fim:
+            fins[item["appid"]] = datetime.fromtimestamp(int(fim), timezone.utc).strftime(
+                "%Y-%m-%dT%H:%M:%S.000Z"
+            )
+    return fins
+
+
 def gratuitos() -> list[dict]:
     """Lista os jogos com 100% de desconto agora na Steam (Brasil)."""
     resp = requests.get(
@@ -115,6 +140,11 @@ def gratuitos() -> list[dict]:
         d = _dados(int(m.group(1)))
         if d and (d.get("price_overview") or {}).get("discount_percent") == 100:
             jogos.append(_formatar(d, int(m.group(1))))
+    fins = _fim_promocoes([j["id"] for j in jogos])
+    for jogo in jogos:
+        # a Steam não informa o início da promoção
+        jogo["inicio_promocao"] = None
+        jogo["fim_promocao"] = fins.get(jogo["id"])
     return jogos
 
 

@@ -172,11 +172,11 @@ Lista de jogos com os campos:
 
 ### Rota `/steam/gratuitos`
 
-Não recebe parâmetros. Retorna até 50 jogos em promoção com 100% de desconto no momento (preços em BRL), no mesmo formato de `/steam/buscar`, incluindo `url`.
+Não recebe parâmetros. Retorna até 50 jogos em promoção com 100% de desconto no momento (preços em BRL), no mesmo formato de `/steam/buscar`, incluindo `url`, mais `inicio_promocao` e `fim_promocao` (datas ISO em UTC, como na Epic). A Steam informa só o fim da promoção; o início vem `null`.
 
 ### Rota `/gog/gratuitos`
 
-Não recebe parâmetros. Retorna até 48 jogos em promoção cujo preço final é zero no momento (preços em BRL), no mesmo formato de `/gog/buscar`, incluindo `url`. Pode retornar lista vazia quando não há promoções gratuitas.
+Não recebe parâmetros. Retorna até 48 jogos em promoção cujo preço final é zero no momento (preços em BRL), no mesmo formato de `/gog/buscar`, incluindo `url`, mais `inicio_promocao` e `fim_promocao`. A GOG não divulga as datas da promoção, então os dois campos vêm sempre `null`. Pode retornar lista vazia quando não há promoções gratuitas.
 
 ### Rota `/epic/gratuitos`
 
